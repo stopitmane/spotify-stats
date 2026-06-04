@@ -32,14 +32,15 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, [range]);
 
-  const avgPop = tracks?.length
-    ? Math.round(tracks.reduce((a, t) => a + t.popularity, 0) / tracks.length)
+  const tracksWithPop = (tracks || []).filter(t => typeof t.popularity === 'number' && !isNaN(t.popularity));
+  const avgPop = tracksWithPop.length
+    ? Math.round(tracksWithPop.reduce((a, t) => a + t.popularity, 0) / tracksWithPop.length)
     : null;
 
-  const topGenre = artists?.flatMap(a => a.genres || [])
-    .reduce((acc, g) => { acc[g] = (acc[g] || 0) + 1; return acc; }, {});
-  const topGenreName = topGenre
-    ? Object.entries(topGenre).sort((a, b) => b[1] - a[1])[0]?.[0]
+  const allGenres = (artists || []).flatMap(a => Array.isArray(a.genres) ? a.genres : []);
+  const genreMap  = allGenres.reduce((acc, g) => { acc[g] = (acc[g] || 0) + 1; return acc; }, {});
+  const topGenreName = Object.keys(genreMap).length
+    ? Object.entries(genreMap).sort((a, b) => b[1] - a[1])[0][0]
     : null;
 
   const initials = user?.display_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
